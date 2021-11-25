@@ -13,4 +13,9 @@ router.get('/', userController.getUsers)
 //@acess Public
 router.post('/register', userController.register)
 
+//@route POST /api/users/login
+//@desc Login
+//@acess Public
+router.post('/login', userController.login)
+
 module.exports = router

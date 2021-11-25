@@ -1,5 +1,8 @@
-const User = require('../models/User')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
 const { hashPassword } = require('../helpers/auth')
+const User = require('../models/User')
 
 const getUsers = async (req, res) => {
     try {
@@ -34,10 +37,45 @@ const register = async (req, res) => {
     } catch (e) {
         res.status(500, {
             message: e.message
-        })    }
+        })
+    }
 
 }
+
+const login = async (req, res) => {
+    const { email, password } = req.body
+
+    try {
+        const user = await User.findOne({ email: email })
+
+        if (!user) {
+            return res.status(422).send({ message: "Email não encontrado." })
+        }
+        const checkPassword = await bcrypt.compare(password, user.password)
+
+        if (!checkPassword) {
+            return res.status(422).send({ message: "Senha incorreta." })
+        }
+
+        const SECRET = process.env.SECRET
+        const token = jwt.sign({ id: user._id }, SECRET)
+
+        res.status(200).json({
+            message: "Token deu bom.",
+            token
+        })
+
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({
+            message: e.message
+        })
+    }
+}
+
+
 module.exports = {
     getUsers,
-    register
+    register,
+    login
 }
